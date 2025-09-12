@@ -121,7 +121,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildDrawerContent() {
-    return Column(
+    return ListView(
+      padding: EdgeInsets.zero,
       children: [
         const SizedBox(height: 40),
         const Padding(
@@ -157,7 +158,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         _buildDrawerItem(Icons.person, 'Profile', 2),
         _buildDrawerItem(Icons.track_changes, 'Application Tracker', 6),
         _buildDrawerItem(Icons.notifications, 'Notification', 8),
-        const Spacer(),
+        const SizedBox(height: 20),
         const Divider(),
         ListTile(
           leading: const Icon(Icons.logout),
@@ -169,6 +170,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             await FirebaseAuth.instance.signOut();
           },
         ),
+        const SizedBox(height: 20),
       ],
     );
   }
