@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     Page2(),
     Profile(),
     Page3(),
-    Page4(),
+    AdminDashboardPage(),
     AboutUs(),
     ApplicationTracker(),
     Dashboard(),
