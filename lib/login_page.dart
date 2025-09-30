@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'forgot_pw_page.dart';
+import '../main_homepage.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback showRegisterPage;
@@ -12,9 +13,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // text controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isHovering = false;
 
   Future<void> signIn() async {
     try {
@@ -22,23 +23,23 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
     } catch (e) {
       showDialog(
         context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Login Failed'),
-            content: const Text('Invalid email or password. Please try again.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
+        builder: (_) => AlertDialog(
+          title: const Text('Login Failed'),
+          content: const Text('Invalid email or password. Please try again.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
     }
   }
@@ -52,178 +53,80 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 600;
+    final screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      backgroundColor: Colors.lightBlue.shade100,
-      body: SafeArea(
+    return MainScaffold(
+      child: Container(
+        // 🔹 Full background image
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/bgimage.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
         child: Center(
-          child: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMobileLayout() {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Image section
-          Center(
-            child: Image.asset(
-              'images/logo.png',
-              width: 250,
-              height: 250,
-              fit: BoxFit.cover,
-            ),
-          ),
-          const SizedBox(height: 10),
-          // Title
-          Text(
-            'PESO WEBSITE',
-            style: GoogleFonts.bebasNeue(fontSize: 70),
-          ),
-          const SizedBox(height: 50),
-          // Email text-field
-          _buildInputField(_emailController, 'Email'),
-          const SizedBox(height: 10),
-          // Password text-field
-          _buildInputField(_passwordController, 'Password', obscureText: true),
-          const SizedBox(height: 10),
-          // Forgot Password Link
-          _buildForgotPasswordLink(),
-          const SizedBox(height: 10),
-          // Sign in button
-          _buildLoginButton(),
-          const SizedBox(height: 25),
-          // Not a member? Register now
-          _buildRegisterLink(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDesktopLayout() {
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 1500),
-      padding: const EdgeInsets.all(40),
-      child: Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: Row(
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Expanded(
-                flex: 3,
+              // 🔹 Full-height solid stripe behind the card
+              Container(
+                width: 600, // wider than login card
+                height: screenHeight, // full height
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue[700]!, Colors.blue[900]!],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ), // flat edges for full-height stripe
+                ),
+              ),
+
+              // 🔹 Login Card
+              SingleChildScrollView(
                 child: Container(
+                  padding: const EdgeInsets.all(30),
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
                   decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/bgimage.png'),
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      bottomLeft: Radius.circular(20),
-                    ),
+                    color: Colors.white.withOpacity(0.95),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                  child: Stack(
+                  constraints: const BoxConstraints(maxWidth: 450),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Top-left text
-                      Positioned(
-                        top: 20,
-                        left: 20,
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.7), // transparent white background
-                            borderRadius: BorderRadius.circular(8), // rounded corners
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'PESO MAKATI',
-                                style: GoogleFonts.bebasNeue(
-                                  fontSize: 80,
-                                  color: Colors.blueAccent, // make text readable on white
-                                ),
-                              ),
-                              Text(
-                                'JOB RECOMMENDATION APP',
-                                style: GoogleFonts.bebasNeue(
-                                  fontSize: 45,
-                                  color: Colors.blueAccent, // make text readable on white
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      // Logo
+                      Image.asset(
+                        'assets/images/logo.png',
+                        width: 120,
+                        height: 120,
                       ),
-
-
-                      // Bottom-left logo + PESO MAKATI text
-                      Positioned(
-                        bottom: 20,
-                        left: 20,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Image.asset(
-                              'assets/images/logo.png',
-                              width: 150,
-                              height: 150,
-                              fit: BoxFit.contain,
-                            ),
-                            const SizedBox(height: 10),
-                          ],
-                        ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'PESO WEBSITE',
+                        style: GoogleFonts.bebasNeue(fontSize: 36),
                       ),
+                      const SizedBox(height: 30),
+                      // Email & Password
+                      _buildInputField(_emailController, 'Email'),
+                      const SizedBox(height: 15),
+                      _buildInputField(_passwordController, 'Password', obscureText: true),
+                      const SizedBox(height: 10),
+                      _buildForgotPasswordLink(),
+                      const SizedBox(height: 20),
+                      _buildLoginButton(),
+                      const SizedBox(height: 20),
+                      _buildRegisterLink(),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: 40),
-              Expanded(
-                flex: 2,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade200, // Light blue background
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            'Log In',
-                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 30),
-                          _buildInputField(_emailController, 'Email'),
-                          const SizedBox(height: 20),
-                          _buildInputField(_passwordController, 'Password', obscureText: true),
-                          const SizedBox(height: 20),
-                          _buildForgotPasswordLink(),
-                          const SizedBox(height: 30),
-                          _buildLoginButton(),
-                          const SizedBox(height: 20),
-
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    _buildRegisterLink(),
-                  ],
-                ),
-              ),
-
             ],
           ),
         ),
@@ -233,78 +136,62 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildInputField(TextEditingController controller, String hintText,
       {bool obscureText = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          border: Border.all(color: Colors.white),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.only(left: 20.0),
-          child: TextField(
-            controller: controller,
-            obscureText: obscureText,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: hintText,
-              fillColor: Colors.grey[200],
-              filled: false,
-            ),
-          ),
-        ),
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        hintText: hintText,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.grey[200],
       ),
     );
   }
 
   Widget _buildForgotPasswordLink() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ForgotPasswordPage(),
-                ),
-              );
-            },
-            child: const Text(
-              'Forgot Password?',
-              style: TextStyle(
-                color: Colors.blue,
-                fontWeight: FontWeight.bold,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ForgotPasswordPage(),
               ),
+            );
+          },
+          child: const Text(
+            'Forgot Password?',
+            style: TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildLoginButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
       child: GestureDetector(
         onTap: signIn,
-        child: Container(
-          padding: const EdgeInsets.all(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(18),
+          width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.redAccent,
+            color: _isHovering ? Colors.red.shade700 : Colors.redAccent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Center(
             child: Text(
               'Log In',
               style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+                  color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
             ),
           ),
         ),

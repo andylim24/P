@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "963470251921",
+    "project_id": "makati-peso",
+    "storage_bucket": "makati-peso.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:963470251921:android:34adce247f9c09ff072c30",
+        "android_client_info": {
+          "package_name": "com.example.peso_makati_website_application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQgLpLkgCKo0yAjX1gU-PSdEtq-V-KU9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

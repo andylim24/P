@@ -1,6 +1,6 @@
 {
-    "name": "peso",
-    "short_name": "peso",
+    "name": "peso_makati_website_application",
+    "short_name": "peso_makati_website_application",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

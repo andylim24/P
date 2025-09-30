@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'home_page.dart';
+import 'main_homepage.dart';
 
 class RegisterPage extends StatefulWidget {
   final VoidCallback showLoginPage;
@@ -13,39 +13,19 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  // Controllers
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _skillsController = TextEditingController();
-
+  bool _isHovering = false;
   String? _selectedBarangay;
+
   final List<String> _barangayList = [
-    'Poblacion',
-    'Bel-Air',
-    'Guadalupe Nuevo',
-    'San Antonio',
-    'Santa Cruz',
-    'San Lorenzo',
-    'Cembo',
-    'Comembo',
-    'East Rembo',
-    'West Rembo',
-    'Pembo',
-    'South Cembo',
-    'Rizal',
-    'Pitogo',
-    'Olympia',
-    'Bangkal',
-    'Tejeros',
-    'Singkamas',
-    'La Paz',
-    'Santa Cruz',
-    'Palanan',
-    'Magallanes',
-    'San Isidro',
-    'Kasilawan',
+    'Poblacion','Bel-Air','Guadalupe Nuevo','San Antonio','Santa Cruz','San Lorenzo',
+    'Cembo','Comembo','East Rembo','West Rembo','Pembo','South Cembo','Rizal',
+    'Pitogo','Olympia','Bangkal','Tejeros','Singkamas','La Paz','Santa Cruz',
+    'Palanan','Magallanes','San Isidro','Kasilawan',
   ];
 
   @override
@@ -69,25 +49,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
         User? user = userCredential.user;
 
-        await addUserDetails(
-          user!.email!,
-          user.uid,
-        );
+        await addUserDetails(user!.email!, user.uid);
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const HomePage(),
-          ),
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomePage()),
         );
       } catch (e) {
         showDialog(
           context: context,
-          builder: (context) {
-            return AlertDialog(
-              content: Text(e.toString()),
-            );
-          },
+          builder: (_) => AlertDialog(content: Text(e.toString())),
         );
       }
     }
@@ -96,8 +66,8 @@ class _RegisterPageState extends State<RegisterPage> {
   Future addUserDetails(String email, String uid) async {
     final skillsList = _skillsController.text
         .split(',')
-        .map((skill) => skill.trim())
-        .where((skill) => skill.isNotEmpty)
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
         .toList();
 
     await FirebaseFirestore.instance.collection('users').doc(uid).set({
@@ -111,17 +81,14 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   bool passwordConfirmed() {
-    if (_passwordController.text.trim() ==
-        _confirmPasswordController.text.trim()) {
+    if (_passwordController.text.trim() == _confirmPasswordController.text.trim()) {
       return true;
     } else {
       showDialog(
         context: context,
-        builder: (context) {
-          return const AlertDialog(
-            content: Text("Passwords don't match!"),
-          );
-        },
+        builder: (_) => const AlertDialog(
+          content: Text("Passwords don't match!"),
+        ),
       );
       return false;
     }
@@ -129,168 +96,83 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width > 600;
+    final screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      backgroundColor: Colors.lightBlue.shade100,
-      body: SafeArea(
-        child: Center(
-          child: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+    return MainScaffold(
+      child: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/bgimage.png'),
+            fit: BoxFit.cover,
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildMobileLayout() {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 20),
-          const Text('Sign Up', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 30),
-          _buildInputField(_fullNameController, 'Full Name'),
-          const SizedBox(height: 15),
-          _buildInputField(_emailController, 'Email'),
-          const SizedBox(height: 15),
-          _buildInputField(_skillsController, 'Skills (comma-separated)'),
-          const SizedBox(height: 15),
-          _buildDropdownField(),
-          const SizedBox(height: 15),
-          _buildInputField(_passwordController, 'Password', obscureText: true),
-          const SizedBox(height: 15),
-          _buildInputField(_confirmPasswordController, 'Confirm Password', obscureText: true),
-          const SizedBox(height: 25),
-          _buildRegisterButton(),
-          const SizedBox(height: 25),
-          _buildLoginLink(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDesktopLayout() {
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 1500),
-      padding: const EdgeInsets.all(40),
-      child: Card(
-        elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: Row(
+        child: Center(
+          child: Stack(
+            alignment: Alignment.center,
             children: [
-              Expanded(
-                flex: 3,
+              // 🔹 Full-height stripe behind the card
+              Container(
+                width: 600, // wider than login card
+                height: screenHeight, // full height
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue[700]!, Colors.blue[900]!],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ), // flat edges for full-height stripe
+                ),
+              ),
+
+              // 🔹 Register Card
+              SingleChildScrollView(
                 child: Container(
+                  padding: const EdgeInsets.all(30),
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
                   decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/bgimage.png'),
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      bottomLeft: Radius.circular(20),
-                    ),
+                    color: Colors.white.withOpacity(0.95),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                  child: Stack(
+                  constraints: const BoxConstraints(maxWidth: 450),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Top-left text
-                      Positioned(
-                        top: 20,
-                        left: 20,
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.7), // transparent white background
-                            borderRadius: BorderRadius.circular(8), // rounded corners
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'PESO MAKATI',
-                                style: GoogleFonts.bebasNeue(
-                                  fontSize: 80,
-                                  color: Colors.blueAccent, // make text readable on white
-                                ),
-                              ),
-                              Text(
-                                'JOB RECOMMENDATION APP',
-                                style: GoogleFonts.bebasNeue(
-                                  fontSize: 45,
-                                  color: Colors.blueAccent, // make text readable on white
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      Image.asset(
+                        'assets/images/logo.png',
+                        width: 120,
+                        height: 120,
                       ),
-
-
-                      // Bottom-left logo + PESO MAKATI text
-                      Positioned(
-                        bottom: 20,
-                        left: 20,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Image.asset(
-                              'assets/images/logo.png',
-                              width: 150,
-                              height: 150,
-                              fit: BoxFit.contain,
-                            ),
-                            const SizedBox(height: 10),
-                          ],
-                        ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'PESO WEBSITE',
+                        style: GoogleFonts.bebasNeue(fontSize: 36),
                       ),
+                      const SizedBox(height: 30),
+                      _buildInputField(_fullNameController, 'Full Name'),
+                      const SizedBox(height: 15),
+                      _buildInputField(_emailController, 'Email'),
+                      const SizedBox(height: 15),
+                      _buildInputField(_skillsController, 'Skills (comma-separated)'),
+                      const SizedBox(height: 15),
+                      _buildDropdownField(),
+                      const SizedBox(height: 15),
+                      _buildInputField(_passwordController, 'Password', obscureText: true),
+                      const SizedBox(height: 15),
+                      _buildInputField(_confirmPasswordController, 'Confirm Password', obscureText: true),
+                      const SizedBox(height: 25),
+                      _buildRegisterButton(),
+                      const SizedBox(height: 20),
+                      _buildLoginLink(),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: 40),
-              Expanded(
-                flex: 2,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(40),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade200, // Light blue background
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            'Create Account',
-                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 30),
-                          _buildInputField(_fullNameController, 'Full Name'),
-                          const SizedBox(height: 15),
-                          _buildInputField(_emailController, 'Email'),
-                          const SizedBox(height: 15),
-                          _buildInputField(_skillsController, 'Skills (comma-separated)'),
-                          const SizedBox(height: 15),
-                          _buildDropdownField(),
-                          const SizedBox(height: 15),
-                          _buildInputField(_passwordController, 'Password', obscureText: true),
-                          const SizedBox(height: 15),
-                          _buildInputField(_confirmPasswordController, 'Confirm Password', obscureText: true),
-                          const SizedBox(height: 25),
-                          _buildRegisterButton(),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    _buildLoginLink(),
-                  ],
-                ),
-              ),
-
             ],
           ),
         ),
@@ -298,80 +180,54 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildInputField(TextEditingController controller, String hintText, {bool obscureText = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          border: Border.all(color: Colors.white),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.only(left: 20.0),
-          child: TextField(
-            controller: controller,
-            obscureText: obscureText,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: hintText,
-              fillColor: Colors.grey[200],
-              filled: false,
-            ),
-          ),
-        ),
+  Widget _buildInputField(TextEditingController controller, String hintText,
+      {bool obscureText = false}) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        hintText: hintText,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.grey[200],
       ),
     );
   }
 
   Widget _buildDropdownField() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          border: Border.all(color: Colors.white),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: _selectedBarangay,
-            hint: const Text('Select Barangay'),
-            isExpanded: true,
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedBarangay = newValue!;
-              });
-            },
-            items: _barangayList.map((String barangay) {
-              return DropdownMenuItem<String>(
-                value: barangay,
-                child: Text(barangay),
-              );
-            }).toList(),
-          ),
-        ),
+    return DropdownButtonFormField<String>(
+      value: _selectedBarangay,
+      hint: const Text('Select Barangay'),
+      onChanged: (value) => setState(() => _selectedBarangay = value),
+      items: _barangayList
+          .map((b) => DropdownMenuItem(value: b, child: Text(b)))
+          .toList(),
+      decoration: InputDecoration(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.grey[200],
       ),
     );
   }
 
   Widget _buildRegisterButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovering = true),
+      onExit: (_) => setState(() => _isHovering = false),
       child: GestureDetector(
         onTap: signUp,
-        child: Container(
-          padding: const EdgeInsets.all(20),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.all(18),
+          width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.redAccent,
+            color: _isHovering ? Colors.red.shade700 : Colors.redAccent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Center(
-            child: Text(
-              'REGISTER',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-            ),
+            child: Text('Register',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
           ),
         ),
       ),
@@ -385,10 +241,8 @@ class _RegisterPageState extends State<RegisterPage> {
         const Text('Already have an account?', style: TextStyle(fontWeight: FontWeight.bold)),
         GestureDetector(
           onTap: widget.showLoginPage,
-          child: const Text(
-            ' Login now',
-            style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-          ),
+          child: const Text('  Login',
+              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
         ),
       ],
     );

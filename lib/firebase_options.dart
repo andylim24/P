@@ -21,25 +21,13 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -53,12 +41,48 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDoK9WD8kT0xiYeWjhEUExjIGtxmribprM',
-    appId: '1:426987775273:web:f7eab95073f93279a3c338',
-    messagingSenderId: '426987775273',
-    projectId: 'peso-da3af',
-    authDomain: 'peso-da3af.firebaseapp.com',
-    storageBucket: 'peso-da3af.firebasestorage.app',
-    measurementId: 'G-VC4VBM8914',
+    apiKey: 'AIzaSyANLgO08wFEnKK91ps_hgboEyyFIRg3fhM',
+    appId: '1:963470251921:web:46f40eb59f935ae1072c30',
+    messagingSenderId: '963470251921',
+    projectId: 'makati-peso',
+    authDomain: 'makati-peso.firebaseapp.com',
+    storageBucket: 'makati-peso.firebasestorage.app',
+    measurementId: 'G-DKKJF91TR6',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyDQgLpLkgCKo0yAjX1gU-PSdEtq-V-KU9Q',
+    appId: '1:963470251921:android:34adce247f9c09ff072c30',
+    messagingSenderId: '963470251921',
+    projectId: 'makati-peso',
+    storageBucket: 'makati-peso.firebasestorage.app',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyBlTg7Mvqnl9HTTNMwCNNR-Tbi8nJ-lPTk',
+    appId: '1:963470251921:ios:284a1751f3cd7f3b072c30',
+    messagingSenderId: '963470251921',
+    projectId: 'makati-peso',
+    storageBucket: 'makati-peso.firebasestorage.app',
+    iosBundleId: 'com.example.pesoMakatiWebsiteApplication',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyBlTg7Mvqnl9HTTNMwCNNR-Tbi8nJ-lPTk',
+    appId: '1:963470251921:ios:284a1751f3cd7f3b072c30',
+    messagingSenderId: '963470251921',
+    projectId: 'makati-peso',
+    storageBucket: 'makati-peso.firebasestorage.app',
+    iosBundleId: 'com.example.pesoMakatiWebsiteApplication',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyANLgO08wFEnKK91ps_hgboEyyFIRg3fhM',
+    appId: '1:963470251921:web:a28cdda3592b2153072c30',
+    messagingSenderId: '963470251921',
+    projectId: 'makati-peso',
+    authDomain: 'makati-peso.firebaseapp.com',
+    storageBucket: 'makati-peso.firebasestorage.app',
+    measurementId: 'G-XQREB4KKTX',
   );
 }

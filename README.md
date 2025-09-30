@@ -1,4 +1,4 @@
-# peso
+# peso_makati_website_application
 
 A new Flutter project.
 
