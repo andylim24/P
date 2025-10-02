@@ -40,15 +40,28 @@ class _FileUploadSectionState extends State<FileUploadSection> {
     final consent = await _showDisclaimerDialog();
     if (!consent) return;
 
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
+    // Ask choice between PDF or Image
+    final fileType = await _chooseFileType();
+    if (fileType == null) return;
+
+    FilePickerResult? result;
+    if (fileType == "pdf") {
+      result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+    } else {
+      result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png'],
+      );
+    }
 
     if (result != null && result.files.single.bytes != null && user != null) {
       final fileBytes = result.files.single.bytes!;
+      final extension = result.files.single.extension ?? "file";
       final fileName =
-          '$type/${user!.uid}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+          '$type/${user!.uid}_${DateTime.now().millisecondsSinceEpoch}.$extension';
 
       setState(() => isUploading = true);
 
@@ -62,6 +75,7 @@ class _FileUploadSectionState extends State<FileUploadSection> {
             .doc(user!.uid)
             .update({
           '${type}Url': downloadUrl,
+          '${type}Type': extension, // save file type for display
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -79,6 +93,26 @@ class _FileUploadSectionState extends State<FileUploadSection> {
     }
   }
 
+  Future<String?> _chooseFileType() async {
+    return await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Choose File Type"),
+        content: const Text("Would you like to upload a PDF or an Image?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, "pdf"),
+            child: const Text("PDF"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, "image"),
+            child: const Text("Image"),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _removeFile(String type) async {
     final field = '${type}Url';
     if (userData?[field] != null && user != null) {
@@ -88,6 +122,7 @@ class _FileUploadSectionState extends State<FileUploadSection> {
             .doc(user!.uid)
             .update({
           field: FieldValue.delete(),
+          '${type}Type': FieldValue.delete(),
         });
         setState(() => userData![field] = null);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -111,6 +146,7 @@ class _FileUploadSectionState extends State<FileUploadSection> {
       );
     }
   }
+
   Future<bool> _showDisclaimerDialog() async {
     bool consentGiven = false;
 
@@ -192,8 +228,8 @@ class _FileUploadSectionState extends State<FileUploadSection> {
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content:
-                      Text("You must provide consent before uploading."),
+                      content: Text(
+                          "You must provide consent before uploading."),
                     ),
                   );
                 }
@@ -207,11 +243,22 @@ class _FileUploadSectionState extends State<FileUploadSection> {
         false;
   }
 
-
   Widget _buildUploadBox(String label, String type) {
     final field = '${type}Url';
+    final fileType = userData?['${type}Type'];
     final bgColor =
     type == 'resume' ? Colors.blue.shade700 : Colors.green.shade700;
+
+    Icon leadingIcon;
+    if (fileType == "pdf") {
+      leadingIcon = const Icon(Icons.picture_as_pdf, color: Colors.white);
+    } else if (fileType == "jpg" ||
+        fileType == "jpeg" ||
+        fileType == "png") {
+      leadingIcon = const Icon(Icons.image, color: Colors.white);
+    } else {
+      leadingIcon = const Icon(Icons.insert_drive_file, color: Colors.white);
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -234,7 +281,7 @@ class _FileUploadSectionState extends State<FileUploadSection> {
               tileColor: Colors.white10,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
-              leading: const Icon(Icons.picture_as_pdf, color: Colors.white),
+              leading: leadingIcon,
               title: Text(
                 'View $label',
                 style: const TextStyle(
@@ -253,7 +300,8 @@ class _FileUploadSectionState extends State<FileUploadSection> {
               foregroundColor: bgColor,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
             onPressed: isUploading ? null : () => _uploadFile(type),
             icon: isUploading
@@ -267,8 +315,8 @@ class _FileUploadSectionState extends State<FileUploadSection> {
               isUploading
                   ? 'Uploading...'
                   : (userData?[field] != null
-                  ? 'Update $label (PDF)'
-                  : 'Upload $label (PDF)'),
+                  ? 'Update $label (PDF/Image)'
+                  : 'Upload $label (PDF/Image)'),
             ),
           ),
         ],
