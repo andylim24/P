@@ -128,7 +128,7 @@ class HomeSectionForeground extends StatelessWidget {
                         children: [
                           Image.asset(
                             'assets/images/makati_logo.png',
-                            height: 40,
+                            height: 80,
                           ),
                           const SizedBox(width: 8),
                           const Text(
@@ -145,7 +145,7 @@ class HomeSectionForeground extends StatelessWidget {
                         children: [
                           Image.asset(
                             'assets/images/logo.png',
-                            height: 40,
+                            height: 80,
                           ),
                           const SizedBox(width: 8),
                           const Text(

@@ -22,10 +22,10 @@ class _RegisterPageState extends State<RegisterPage> {
   String? _selectedBarangay;
 
   final List<String> _barangayList = [
-    'Poblacion','Bel-Air','Guadalupe Nuevo','San Antonio','Santa Cruz','San Lorenzo',
-    'Cembo','Comembo','East Rembo','West Rembo','Pembo','South Cembo','Rizal',
-    'Pitogo','Olympia','Bangkal','Tejeros','Singkamas','La Paz','Santa Cruz',
-    'Palanan','Magallanes','San Isidro','Kasilawan',
+    'Poblacion', 'Bel-Air', 'Guadalupe Nuevo', 'San Antonio', 'Santa Cruz', 'San Lorenzo',
+    'Cembo', 'Comembo', 'East Rembo', 'West Rembo', 'Pembo', 'South Cembo', 'Rizal',
+    'Pitogo', 'Olympia', 'Bangkal', 'Tejeros', 'Singkamas', 'La Paz', 'Santa Cruz',
+    'Palanan', 'Magallanes', 'San Isidro', 'Kasilawan',
   ];
 
   @override
@@ -110,67 +110,107 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // 🔹 Full-height stripe behind the card
+              // Gradient background stripe
               Container(
-                width: 600, // wider than login card
-                height: screenHeight, // full height
+                width: 600,
+                height: screenHeight,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.blue[700]!, Colors.blue[900]!],
+                    colors: [Colors.blue.shade700, Colors.blue.shade900],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                  ), // flat edges for full-height stripe
+                  ),
+                ),
+                child: CustomPaint(
+                  painter: PlusSignPainter(),
                 ),
               ),
 
-              // 🔹 Register Card
+              // Register form container
               SingleChildScrollView(
-                child: Container(
-                  padding: const EdgeInsets.all(30),
-                  margin: const EdgeInsets.symmetric(horizontal: 24),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.95),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo and PESO Text outside the form container
+                    Padding(
+                      padding: const EdgeInsets.only(top: 40),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/logo.png',
+                            width: 140,
+                            height: 140,
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            children: [
+                              Text(
+                                'PESO MAKATI:',
+                                style: GoogleFonts.bebasNeue(
+                                  fontSize: 65,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                'Job Recommendation APP',
+                                style: GoogleFonts.bebasNeue(
+                                  fontSize: 35,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  constraints: const BoxConstraints(maxWidth: 450),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset(
-                        'assets/images/logo.png',
-                        width: 120,
-                        height: 120,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // White form container with input fields
+                    Container(
+                      padding: const EdgeInsets.all(30),
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'PESO WEBSITE',
-                        style: GoogleFonts.bebasNeue(fontSize: 36),
+                      constraints: const BoxConstraints(maxWidth: 450),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Create a Makati Job Account',
+                            style: GoogleFonts.bebasNeue(
+                              fontSize: 24,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                          _buildInputField(_fullNameController, 'Full Name'),
+                          const SizedBox(height: 15),
+                          _buildInputField(_emailController, 'Email'),
+                          const SizedBox(height: 15),
+                          _buildInputField(_skillsController, 'Skills (comma-separated)'),
+                          const SizedBox(height: 15),
+                          _buildDropdownField(),
+                          const SizedBox(height: 15),
+                          _buildInputField(_passwordController, 'Password', obscureText: true),
+                          const SizedBox(height: 15),
+                          _buildInputField(_confirmPasswordController, 'Confirm Password', obscureText: true),
+                          const SizedBox(height: 25),
+                          _buildRegisterButton(),
+                          const SizedBox(height: 20),
+                          _buildLoginLink(),
+                        ],
                       ),
-                      const SizedBox(height: 30),
-                      _buildInputField(_fullNameController, 'Full Name'),
-                      const SizedBox(height: 15),
-                      _buildInputField(_emailController, 'Email'),
-                      const SizedBox(height: 15),
-                      _buildInputField(_skillsController, 'Skills (comma-separated)'),
-                      const SizedBox(height: 15),
-                      _buildDropdownField(),
-                      const SizedBox(height: 15),
-                      _buildInputField(_passwordController, 'Password', obscureText: true),
-                      const SizedBox(height: 15),
-                      _buildInputField(_confirmPasswordController, 'Confirm Password', obscureText: true),
-                      const SizedBox(height: 25),
-                      _buildRegisterButton(),
-                      const SizedBox(height: 20),
-                      _buildLoginLink(),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -180,8 +220,7 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildInputField(TextEditingController controller, String hintText,
-      {bool obscureText = false}) {
+  Widget _buildInputField(TextEditingController controller, String hintText, {bool obscureText = false}) {
     return TextField(
       controller: controller,
       obscureText: obscureText,
@@ -221,7 +260,7 @@ class _RegisterPageState extends State<RegisterPage> {
           padding: const EdgeInsets.all(18),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: _isHovering ? Colors.red.shade700 : Colors.redAccent,
+            color: _isHovering ? Colors.blue.shade800 : Colors.blue.shade700,
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Center(
@@ -246,5 +285,31 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ],
     );
+  }
+}
+class PlusSignPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.white.withOpacity(0.2)
+      ..style = PaintingStyle.fill;
+
+    double spacing = 40.0;  // Adjust the spacing between the plus signs
+    double sizeOfPlus = 20.0; // Adjust the size of the plus sign
+    double padding = 20.0; // Padding around the edges of the container
+
+    // Draw "+" symbols in rows and columns, with padding to avoid edges
+    for (double x = padding; x < size.width - padding + spacing; x += spacing) {
+      for (double y = padding; y < size.height - padding; y += spacing) {
+        // Draw the "+" symbol by combining lines
+        canvas.drawLine(Offset(x - sizeOfPlus / 2, y), Offset(x + sizeOfPlus / 2, y), paint); // Horizontal line
+        canvas.drawLine(Offset(x, y - sizeOfPlus / 2), Offset(x, y + sizeOfPlus / 2), paint); // Vertical line
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }

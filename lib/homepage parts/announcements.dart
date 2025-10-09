@@ -13,7 +13,7 @@ class AnnouncementsSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Brgy. Sta. Cruz Latest News",
+              "PESO MAKATI Latest News",
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,

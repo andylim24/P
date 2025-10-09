@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:peso_makati_website_application/admin_page/admin_homepage.dart';
 import 'forgot_pw_page.dart';
 import '../main_homepage.dart';
 
@@ -16,15 +17,27 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isHovering = false;
+  bool _isPasswordVisible = false; // Added for show/hide password
 
   Future<void> signIn() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email == 'admin@gmail.com' && password == 'admin123') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminHomepage()),
+      );
+      return;
+    }
+
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        email: email,
+        password: password,
       );
-
-      Navigator.of(context).pushReplacement(
+      Navigator.pushReplacement(
+        context,
         MaterialPageRoute(builder: (_) => const HomePage()),
       );
     } catch (e) {
@@ -57,7 +70,6 @@ class _LoginPageState extends State<LoginPage> {
 
     return MainScaffold(
       child: Container(
-        // 🔹 Full background image
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/bgimage.png'),
@@ -68,63 +80,98 @@ class _LoginPageState extends State<LoginPage> {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // 🔹 Full-height solid stripe behind the card
               Container(
-                width: 600, // wider than login card
-                height: screenHeight, // full height
+                width: 600,
+                height: screenHeight,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.blue[700]!, Colors.blue[900]!],
+                    colors: [Colors.blue.shade700, Colors.blue.shade900],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                  ), // flat edges for full-height stripe
+                  ),
+                ),
+                child: CustomPaint(
+                  painter: PlusSignPainter(),
                 ),
               ),
-
-              // 🔹 Login Card
               SingleChildScrollView(
-                child: Container(
-                  padding: const EdgeInsets.all(30),
-                  margin: const EdgeInsets.symmetric(horizontal: 24),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.95),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo and PESO text side by side
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/logo.png',
+                            width: 140,
+                            height: 140,
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            children: [
+                              Text(
+                                'PESO MAKATI:',
+                                style: GoogleFonts.bebasNeue(
+                                  fontSize: 65,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                'Job Recommendation APP',
+                                style: GoogleFonts.bebasNeue(
+                                  fontSize: 35,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  constraints: const BoxConstraints(maxWidth: 450),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Logo
-                      Image.asset(
-                        'assets/images/logo.png',
-                        width: 120,
-                        height: 120,
+                    ),
+                    const SizedBox(height: 20),
+                    // White Box with Input Fields and Job Recommendation App text
+                    Container(
+                      padding: const EdgeInsets.all(30),
+                      margin: const EdgeInsets.symmetric(horizontal: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'PESO WEBSITE',
-                        style: GoogleFonts.bebasNeue(fontSize: 36),
+                      constraints: const BoxConstraints(maxWidth: 450),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Enter Your Makati Job Account',
+                            style: GoogleFonts.bebasNeue(
+                              fontSize: 24,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                          _buildInputField(_emailController, 'Email'),
+                          const SizedBox(height: 15),
+                          _buildInputField(_passwordController, 'Password', obscureText: true),
+                          const SizedBox(height: 10),
+                          _buildForgotPasswordLink(),
+                          const SizedBox(height: 20),
+                          _buildLoginButton(),
+                          const SizedBox(height: 20),
+                          _buildRegisterLink(),
+                        ],
                       ),
-                      const SizedBox(height: 30),
-                      // Email & Password
-                      _buildInputField(_emailController, 'Email'),
-                      const SizedBox(height: 15),
-                      _buildInputField(_passwordController, 'Password', obscureText: true),
-                      const SizedBox(height: 10),
-                      _buildForgotPasswordLink(),
-                      const SizedBox(height: 20),
-                      _buildLoginButton(),
-                      const SizedBox(height: 20),
-                      _buildRegisterLink(),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -138,12 +185,25 @@ class _LoginPageState extends State<LoginPage> {
       {bool obscureText = false}) {
     return TextField(
       controller: controller,
-      obscureText: obscureText,
+      obscureText: obscureText && !_isPasswordVisible,
       decoration: InputDecoration(
         hintText: hintText,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
         fillColor: Colors.grey[200],
+        suffixIcon: obscureText
+            ? IconButton(
+          icon: Icon(
+            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+            color: Colors.grey[700],
+          ),
+          onPressed: () {
+            setState(() {
+              _isPasswordVisible = !_isPasswordVisible;
+            });
+          },
+        )
+            : null,
       ),
     );
   }
@@ -184,14 +244,17 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.all(18),
           width: double.infinity,
           decoration: BoxDecoration(
-            color: _isHovering ? Colors.red.shade700 : Colors.redAccent,
+            color: _isHovering ? Colors.blue.shade800 : Colors.blue.shade700,
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Center(
             child: Text(
               'Log In',
               style: TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
             ),
           ),
         ),
@@ -219,5 +282,30 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ],
     );
+  }
+}
+
+class PlusSignPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = Colors.white.withOpacity(0.2)
+      ..style = PaintingStyle.fill;
+
+    double spacing = 40.0;
+    double sizeOfPlus = 20.0;
+    double padding = 20.0;
+
+    for (double x = padding; x < size.width - padding + spacing; x += spacing) {
+      for (double y = padding; y < size.height - padding; y += spacing) {
+        canvas.drawLine(Offset(x - sizeOfPlus / 2, y), Offset(x + sizeOfPlus / 2, y), paint);
+        canvas.drawLine(Offset(x, y - sizeOfPlus / 2), Offset(x, y + sizeOfPlus / 2), paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }

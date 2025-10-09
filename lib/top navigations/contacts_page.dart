@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../main_homepage.dart';
 import '../homepage parts/footer.dart';
@@ -40,7 +38,6 @@ class ContactsPage extends StatelessWidget {
                       end: Alignment.bottomCenter,
                     ),
                   ),
-
                   child: const Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.0),
@@ -91,7 +88,7 @@ class ContactsPage extends StatelessWidget {
                           children: [
                             _contactInfo(),
                             const SizedBox(height: 16),
-                            _contactMap(),
+                            _contactImageMap(),
                           ],
                         )
                             : Row(
@@ -99,7 +96,7 @@ class ContactsPage extends StatelessWidget {
                           children: [
                             Expanded(child: _contactInfo()),
                             const SizedBox(width: 20),
-                            Expanded(child: _contactMap()),
+                            Expanded(child: _contactImageMap()),
                           ],
                         );
                       },
@@ -165,20 +162,15 @@ class ContactsPage extends StatelessWidget {
     );
   }
 
-  Widget _contactMap() {
-    return SizedBox(
-      height: 300,
-      child: FlutterMap(
-        options: MapOptions(
-          initialCenter: LatLng(14.5547, 121.0244), // Makati
-          initialZoom: 15,
-        ),
-        children: [
-          TileLayer(
-            urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-            userAgentPackageName: 'com.example.app',
-          ),
-        ],
+  // 🔹 Replaced FlutterMap with Static Image
+  Widget _contactImageMap() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.asset(
+        'assets/images/peso_map.jpg',
+        fit: BoxFit.cover,
+        height: 300,
+        width: double.infinity,
       ),
     );
   }

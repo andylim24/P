@@ -50,6 +50,8 @@ dependencies:
   flutter_map: ^8.2.2
   latlong2: ^0.9.1
   font_awesome_flutter: ^10.9.1
+  image_picker: ^1.2.0
+
 
 dev_dependencies:
   flutter_test:

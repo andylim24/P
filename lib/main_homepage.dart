@@ -15,13 +15,65 @@ import 'homepage parts/footer.dart';
 import 'homepage parts/home.dart';
 import 'notif.dart';
 
-class MainScaffold extends StatelessWidget {
+// ✅ Global cache for username
+String? cachedUserName;
+
+class MainScaffold extends StatefulWidget {
   final Widget child;
   const MainScaffold({super.key, required this.child});
 
   @override
+  State<MainScaffold> createState() => _MainScaffoldState();
+}
+
+class _MainScaffoldState extends State<MainScaffold> {
+  String? _displayName;
+  User? user;
+
+  @override
+  void initState() {
+    super.initState();
+    user = FirebaseAuth.instance.currentUser;
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    if (user == null) return;
+
+    // ✅ Use cache if available (prevents flicker)
+    if (cachedUserName != null) {
+      setState(() => _displayName = cachedUserName);
+      return;
+    }
+
+    // Otherwise, fetch from Firestore once
+    final doc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(user!.uid)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data() as Map<String, dynamic>?;
+      if (data != null && data['fullName'] != null) {
+        cachedUserName = data['fullName'];
+        setState(() => _displayName = cachedUserName);
+      }
+    }
+  }
+
+  void _navigateTo(BuildContext context, Widget page) {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => page,
+        transitionDuration: Duration.zero, // no animation
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
     final isMobile = MediaQuery.of(context).size.width < 800;
 
     return Scaffold(
@@ -29,21 +81,14 @@ class MainScaffold extends StatelessWidget {
         automaticallyImplyLeading: false,
         backgroundColor: Colors.blue[900],
         title: Row(
-          crossAxisAlignment: CrossAxisAlignment.center, // vertical center
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Left: Logo with 100px padding
+            // Left logo
             Padding(
               padding: const EdgeInsets.only(left: 100),
               child: GestureDetector(
-                onTap: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const HomePage()),
-                        (route) => false,
-                  );
-                },
+                onTap: () => _navigateTo(context, const HomePage()),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
                       "Makati",
@@ -64,12 +109,11 @@ class MainScaffold extends StatelessWidget {
               ),
             ),
 
-            const Spacer(), // push center section to the middle
+            const Spacer(),
 
-            // Center: Navigation buttons
+            // Center nav links
             if (!isMobile)
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _navButton(context, "Home", const HomePage()),
                   _navButton(context, "Job Listings", const JobsPage()),
@@ -79,16 +123,17 @@ class MainScaffold extends StatelessWidget {
                 ],
               ),
 
-            const Spacer(), // push right section to the end
+            const Spacer(),
 
-            // Right: User actions with 100px padding
+            // Right actions
             Padding(
               padding: const EdgeInsets.only(right: 100),
-              child: isMobile ? _mobileMenuButton(context) : _userActions(context, user),
+              child: isMobile
+                  ? _mobileMenuButton(context)
+                  : _userActions(context),
             ),
           ],
         ),
-
       ),
       drawer: isMobile
           ? Drawer(
@@ -99,7 +144,8 @@ class MainScaffold extends StatelessWidget {
               decoration: BoxDecoration(color: Colors.blue[900]),
               child: Row(
                 children: [
-                  Image.asset('assets/images/logo.png', width: 36, height: 36),
+                  Image.asset('assets/images/logo.png',
+                      width: 36, height: 36),
                   const SizedBox(width: 8),
                   const Text(
                     "Makati",
@@ -111,26 +157,21 @@ class MainScaffold extends StatelessWidget {
             _drawerItem(context, "Home", const HomePage()),
             _drawerItem(context, "Job Listings", const JobsPage()),
             _drawerItem(context, "Announcements", const ServicesPage()),
-            _navButton(context, "About Us", const AboutUsPage()),
-            _navButton(context, "Contacts", const ContactsPage()),
+            _drawerItem(context, "About Us", const AboutUsPage()),
+            _drawerItem(context, "Contacts", const ContactsPage()),
             const Divider(),
-            _drawerUserActions(context, user),
+            _drawerUserActions(context),
           ],
         ),
       )
           : null,
-      body: child,
+      body: widget.child,
     );
   }
 
-  Widget _navButton(BuildContext context, String text, Widget? page) {
+  Widget _navButton(BuildContext context, String text, Widget page) {
     return TextButton(
-      onPressed: page != null
-          ? () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => page),
-      )
-          : null,
+      onPressed: () => _navigateTo(context, page),
       child: Text(
         text,
         style: const TextStyle(color: Colors.white),
@@ -147,16 +188,15 @@ class MainScaffold extends StatelessWidget {
     );
   }
 
-  Widget _userActions(BuildContext context, User? user) {
+  Widget _userActions(BuildContext context) {
     if (user == null) {
+      // Not logged in
       return Row(
         children: [
           ActionChip(
             label: const Text("Sign Up"),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AuthPage(showLogin: false)),
-              );
+              Navigator.of(context).push(MaterialPageBuilder(showLogin: false));
             },
             backgroundColor: Colors.white,
             labelStyle: const TextStyle(color: Colors.blue),
@@ -165,9 +205,7 @@ class MainScaffold extends StatelessWidget {
           ActionChip(
             label: const Text("Log In"),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AuthPage(showLogin: true)),
-              );
+              Navigator.of(context).push(MaterialPageBuilder(showLogin: true));
             },
             backgroundColor: Colors.white,
             labelStyle: const TextStyle(color: Colors.blue),
@@ -175,81 +213,57 @@ class MainScaffold extends StatelessWidget {
         ],
       );
     } else {
-      return FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance.collection("users").doc(user.uid).get(),
-        builder: (context, snapshot) {
-          String displayName = user.email ?? "User";
-          if (snapshot.hasData && snapshot.data!.exists) {
-            final data = snapshot.data!.data() as Map<String, dynamic>?;
-            if (data != null) displayName = data['fullName'] ?? displayName;
-          }
-          return Row(
-            children: [
-              Text(
-                displayName,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(width: 8),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.account_circle, color: Colors.white),
-                onSelected: (value) async {
-                  if (value == 'logout') {
-                    await FirebaseAuth.instance.signOut();
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HomePage()),
-                          (route) => false,
-                    );
-                  } else if (value == 'profile') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProfilePage()),
-                    );
-                  } else if (value == 'application') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ApplicationTracker()),
-                    );
-                  } else if (value == 'notification') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const Notif()),
-                    );
-                  }
+      // Logged in
+      final displayText = _displayName ?? cachedUserName ?? user!.email ?? "User";
 
-
-                },
-                itemBuilder: (context) => const [
-                  PopupMenuItem(value: 'profile', child: Text("Profile Page")),
-                  PopupMenuItem(value: 'logout', child: Text("Log Out")),
-                  PopupMenuItem(value: 'application', child: Text("Application Tracker")),
-                  PopupMenuItem(value: 'notification', child: Text("Notifications")),
-                ],
-              ),
+      return Row(
+        children: [
+          Text(
+            displayText,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 8),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.account_circle, color: Colors.white),
+            onSelected: (value) async {
+              if (value == 'logout') {
+                cachedUserName = null; // ✅ Clear cache on logout
+                await FirebaseAuth.instance.signOut();
+                if (context.mounted) _navigateTo(context, const HomePage());
+              } else if (value == 'profile') {
+                Navigator.push(context, MaterialPageBuilder(page: const ProfilePage()));
+              } else if (value == 'application') {
+                Navigator.push(context, MaterialPageBuilder(page: const ApplicationTracker()));
+              } else if (value == 'notification') {
+                Navigator.push(context, MaterialPageBuilder(page: const Notif()));
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'profile', child: Text("Profile Page")),
+              PopupMenuItem(value: 'application', child: Text("Application Tracker")),
+              PopupMenuItem(value: 'notification', child: Text("Notifications")),
+              PopupMenuItem(value: 'logout', child: Text("Log Out")),
             ],
-          );
-        },
+          ),
+        ],
       );
     }
   }
 
-
-  Widget _drawerItem(BuildContext context, String text, Widget? page) {
+  Widget _drawerItem(BuildContext context, String text, Widget page) {
     return ListTile(
       title: Text(text),
-      onTap: page != null
-          ? () {
-        Navigator.pop(context); // close drawer
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => page),
-        );
-      }
-          : null,
+      onTap: () {
+        Navigator.pop(context);
+        _navigateTo(context, page);
+      },
     );
   }
 
-  Widget _drawerUserActions(BuildContext context, User? user) {
+  Widget _drawerUserActions(BuildContext context) {
     if (user == null) {
       return Column(
         children: [
@@ -257,42 +271,51 @@ class MainScaffold extends StatelessWidget {
             title: const Text("Sign Up"),
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AuthPage(showLogin: false)),
-              );
+              Navigator.of(context).push(MaterialPageBuilder(showLogin: false));
             },
           ),
           ListTile(
             title: const Text("Log In"),
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const AuthPage(showLogin: true)),
-              );
+              Navigator.of(context).push(MaterialPageBuilder(showLogin: true));
             },
           ),
         ],
       );
     } else {
-      return FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance.collection("users").doc(user.uid).get(),
-        builder: (context, snapshot) {
-          String displayName = user.email ?? "User";
-          if (snapshot.hasData && snapshot.data!.exists) {
-            final data = snapshot.data!.data() as Map<String, dynamic>?;
-            if (data != null) displayName = data['fullName'] ?? displayName;
-          }
-          return Column(
-            children: [
-              ListTile(title: Text(displayName)),
-              ListTile(title: const Text("Profile Page")),
-              ListTile(title: const Text("Log Out")),
-            ],
-          );
-        },
+      final displayText = _displayName ?? cachedUserName ?? user!.email ?? "User";
+
+      return Column(
+        children: [
+          ListTile(title: Text(displayText)),
+          ListTile(
+            title: const Text("Profile Page"),
+            onTap: () => _navigateTo(context, const ProfilePage()),
+          ),
+          ListTile(
+            title: const Text("Log Out"),
+            onTap: () async {
+              cachedUserName = null;
+              await FirebaseAuth.instance.signOut();
+              _navigateTo(context, const HomePage());
+            },
+          ),
+        ],
       );
     }
   }
+}
+
+// ✅ Helper class for instant page transitions
+class MaterialPageBuilder extends PageRouteBuilder {
+  MaterialPageBuilder({Widget? page, bool showLogin = false})
+      : super(
+    pageBuilder: (_, __, ___) =>
+    page ?? AuthPage(showLogin: showLogin),
+    transitionDuration: Duration.zero,
+    reverseTransitionDuration: Duration.zero,
+  );
 }
 
 // ------------------------
@@ -313,10 +336,7 @@ class _HomePageState extends State<HomePage> {
     return MainScaffold(
       child: Stack(
         children: [
-          // fixed background
           const HomeSectionBackground(),
-
-          // scrollable sections
           SingleChildScrollView(
             controller: _scrollController,
             child: Column(
