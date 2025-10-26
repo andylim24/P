@@ -13,6 +13,7 @@ import 'homepage parts/about_us.dart';
 import 'homepage parts/announcements.dart';
 import 'homepage parts/footer.dart';
 import 'homepage parts/home.dart';
+import 'jobseeker_registration_page.dart';
 import 'notif.dart';
 
 // ✅ Global cache for username
@@ -230,7 +231,7 @@ class _MainScaffoldState extends State<MainScaffold> {
             icon: const Icon(Icons.account_circle, color: Colors.white),
             onSelected: (value) async {
               if (value == 'logout') {
-                cachedUserName = null; // ✅ Clear cache on logout
+                cachedUserName = null;
                 await FirebaseAuth.instance.signOut();
                 if (context.mounted) _navigateTo(context, const HomePage());
               } else if (value == 'profile') {
@@ -239,17 +240,27 @@ class _MainScaffoldState extends State<MainScaffold> {
                 Navigator.push(context, MaterialPageBuilder(page: const ApplicationTracker()));
               } else if (value == 'notification') {
                 Navigator.push(context, MaterialPageBuilder(page: const Notif()));
+              } else if (value == 'jobseeker') {
+                Navigator.push(
+                  context,
+                  MaterialPageBuilder(
+                    page: const JobseekerRegistrationPage(isEditMode: true),
+                  ),
+                );
               }
             },
             itemBuilder: (context) => const [
               PopupMenuItem(value: 'profile', child: Text("Profile Page")),
               PopupMenuItem(value: 'application', child: Text("Application Tracker")),
               PopupMenuItem(value: 'notification', child: Text("Notifications")),
+              PopupMenuItem(value: 'jobseeker', child: Text("Jobseeker Registration")),
               PopupMenuItem(value: 'logout', child: Text("Log Out")),
             ],
           ),
         ],
       );
+
+
     }
   }
 

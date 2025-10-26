@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'jobseeker_registration_page.dart';
 import 'main_homepage.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -51,9 +52,11 @@ class _RegisterPageState extends State<RegisterPage> {
 
         await addUserDetails(user!.email!, user.uid);
 
+
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomePage()),
+          MaterialPageRoute(builder: (_) => const JobseekerRegistrationPage()),
         );
+
       } catch (e) {
         showDialog(
           context: context,
