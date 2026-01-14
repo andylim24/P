@@ -25,9 +25,14 @@ class _JobFormDialogState extends State<JobFormDialog> {
 
   String? _educationLevel;
   String? _employmentType;
-  String? _location; // Barangay
+  String? _location;
   String? _logoUrl;
   File? _logoFile;
+
+  // ✅ NEW: Program eligibility checkboxes
+  bool _isPWD = false;    // Persons with Disability
+  bool _isSPES = false;   // Special Program for Employment of Students
+  bool _isMIP = false;    // Mainstreaming Integration Program
 
   final picker = ImagePicker();
 
@@ -60,9 +65,13 @@ class _JobFormDialogState extends State<JobFormDialog> {
     _employmentType = data['employmentType'];
     _location = data['location'] ?? 'Barangays';
     _logoUrl = data['logoUrl'];
+
+    // ✅ Load program eligibility from existing data
+    _isPWD = data['isPWD'] ?? false;
+    _isSPES = data['isSPES'] ?? false;
+    _isMIP = data['isMIP'] ?? false;
   }
 
-  /// Pick image from gallery
   Future<void> _pickLogo() async {
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
@@ -70,7 +79,6 @@ class _JobFormDialogState extends State<JobFormDialog> {
     }
   }
 
-  /// Upload logo to Firebase Storage
   Future<String?> _uploadLogo(File file) async {
     try {
       final ref = FirebaseStorage.instance
@@ -85,14 +93,13 @@ class _JobFormDialogState extends State<JobFormDialog> {
     }
   }
 
-  /// Save or update job
   Future<void> _saveJob() async {
     if (!_formKey.currentState!.validate()) return;
 
     String? uploadedUrl = _logoUrl;
     if (_logoFile != null) {
       uploadedUrl = await _uploadLogo(_logoFile!);
-      if (uploadedUrl == null) return; // stop if upload failed
+      if (uploadedUrl == null) return;
     }
 
     final jobData = {
@@ -112,6 +119,10 @@ class _JobFormDialogState extends State<JobFormDialog> {
       'location': _location,
       'logoUrl': uploadedUrl,
       'postedDate': Timestamp.now(),
+      // ✅ NEW: Save program eligibility
+      'isPWD': _isPWD,
+      'isSPES': _isSPES,
+      'isMIP': _isMIP,
     };
 
     try {
@@ -158,11 +169,14 @@ class _JobFormDialogState extends State<JobFormDialog> {
                     _logoFile != null
                         ? CircleAvatar(backgroundImage: FileImage(_logoFile!), radius: 30)
                         : _logoUrl != null
-                        ? CircleAvatar(backgroundImage: NetworkImage(_logoUrl!), radius: 30)
-                        : const CircleAvatar(radius: 30, child: Icon(Icons.business)),
+                            ? CircleAvatar(backgroundImage: NetworkImage(_logoUrl!), radius: 30)
+                            : const CircleAvatar(radius: 30, child: Icon(Icons.business)),
                     const SizedBox(width: 12),
                     ElevatedButton.icon(
-                        onPressed: _pickLogo, icon: const Icon(Icons.upload), label: const Text("Upload Logo")),
+                      onPressed: _pickLogo,
+                      icon: const Icon(Icons.upload),
+                      label: const Text("Upload Logo"),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -183,17 +197,29 @@ class _JobFormDialogState extends State<JobFormDialog> {
                 ),
 
                 const SizedBox(height: 10),
-                _buildDropdown("Education Level", educationLevels, _educationLevel, (v) => setState(() => _educationLevel = v)),
+                _buildDropdown("Education Level", educationLevels, _educationLevel,
+                    (v) => setState(() => _educationLevel = v)),
                 const SizedBox(height: 10),
-                _buildDropdown("Employment Type", employmentTypes, _employmentType, (v) => setState(() => _employmentType = v)),
+                _buildDropdown("Employment Type", employmentTypes, _employmentType,
+                    (v) => setState(() => _employmentType = v)),
                 const SizedBox(height: 10),
-                _buildDropdown("Location (Barangay)", barangays, _location, (v) => setState(() => _location = v)),
+                _buildDropdown("Location (Barangay)", barangays, _location,
+                    (v) => setState(() => _location = v)),
+
+                // ✅ NEW: Program Eligibility Section
+                const SizedBox(height: 20),
+                _buildProgramEligibilitySection(),
 
                 const SizedBox(height: 20),
                 Align(
                   alignment: Alignment.centerRight,
                   child: ElevatedButton(
                     onPressed: _saveJob,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade700,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
                     child: Text(widget.doc == null ? "Post Job" : "Update Job"),
                   ),
                 )
@@ -202,6 +228,98 @@ class _JobFormDialogState extends State<JobFormDialog> {
           ),
         ),
       ),
+    );
+  }
+
+  // ✅ NEW: Program Eligibility Checkboxes
+  Widget _buildProgramEligibilitySection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.accessibility_new, color: Colors.blue.shade700),
+              const SizedBox(width: 8),
+              Text(
+                'Program Eligibility',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Check if this job is applicable for the following programs:',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          ),
+          const SizedBox(height: 12),
+          _buildCheckboxTile(
+            value: _isPWD,
+            onChanged: (v) => setState(() => _isPWD = v ?? false),
+            title: 'PWD',
+            subtitle: 'Persons with Disability',
+            icon: Icons.accessible,
+          ),
+          _buildCheckboxTile(
+            value: _isSPES,
+            onChanged: (v) => setState(() => _isSPES = v ?? false),
+            title: 'SPES',
+            subtitle: 'Special Program for Employment of Students',
+            icon: Icons.school,
+          ),
+          _buildCheckboxTile(
+            value: _isMIP,
+            onChanged: (v) => setState(() => _isMIP = v ?? false),
+            title: 'MIP',
+            subtitle: 'Makati Internship Program',
+            icon: Icons.groups,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCheckboxTile({
+    required bool value,
+    required Function(bool?) onChanged,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    return CheckboxListTile(
+      value: value,
+      onChanged: onChanged,
+      title: Row(
+        children: [
+          Icon(icon, size: 20, color: value ? Colors.blue.shade700 : Colors.grey),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: value ? Colors.blue.shade700 : Colors.black87,
+            ),
+          ),
+        ],
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+      ),
+      controlAffinity: ListTileControlAffinity.leading,
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      activeColor: Colors.blue.shade700,
     );
   }
 

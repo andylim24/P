@@ -8,6 +8,7 @@ class AboutUsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
+
       child: Container(
         // 🔹 Background image
         decoration: const BoxDecoration(

@@ -2,18 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../main_homepage.dart';
 
-class ServicesPage extends StatelessWidget {
+class ServicesPage extends StatefulWidget {
   const ServicesPage({super.key});
 
+  @override
+  State<ServicesPage> createState() => _ServicesPageState();
+}
+
+class _ServicesPageState extends State<ServicesPage> {
   final double maxListWidth = 1000;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
-    final _firestore = FirebaseFirestore.instance;
-
     return MainScaffold(
       child: Container(
-        // 🔹 Background image
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/homebackground.png'),
@@ -22,13 +25,12 @@ class ServicesPage extends StatelessWidget {
           ),
         ),
         child: Container(
-          // 🔹 Dark overlay for readability
           color: Colors.black.withOpacity(0.3),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 🔹 Banner
+                // Banner
                 Container(
                   height: 250,
                   width: double.infinity,
@@ -56,7 +58,7 @@ class ServicesPage extends StatelessWidget {
                   ),
                 ),
 
-                // 🔹 Announcements List
+                // Announcements List
                 Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Center(
@@ -81,17 +83,16 @@ class ServicesPage extends StatelessWidget {
                                   .orderBy('date', descending: true)
                                   .snapshots(),
                               builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const Center(
-                                      child: CircularProgressIndicator());
+                                if (snapshot.connectionState == ConnectionState.waiting) {
+                                  return const Center(child: CircularProgressIndicator());
                                 }
                                 if (snapshot.hasError) {
                                   return Center(
-                                      child: Text(
-                                        'Error: ${snapshot.error}',
-                                        style: TextStyle(color: Colors.white),
-                                      ));
+                                    child: Text(
+                                      'Error: ${snapshot.error}',
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                  );
                                 }
 
                                 final docs = snapshot.data?.docs ?? [];
@@ -106,13 +107,11 @@ class ServicesPage extends StatelessWidget {
                                   itemCount: docs.length,
                                   itemBuilder: (context, index) {
                                     final doc = docs[index];
-                                    final data =
-                                    doc.data() as Map<String, dynamic>;
+                                    final data = doc.data() as Map<String, dynamic>;
 
                                     return Card(
                                       color: Colors.white.withOpacity(0.9),
-                                      margin: const EdgeInsets.symmetric(
-                                          vertical: 10),
+                                      margin: const EdgeInsets.symmetric(vertical: 10),
                                       elevation: 3,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
@@ -120,69 +119,52 @@ class ServicesPage extends StatelessWidget {
                                       child: Padding(
                                         padding: const EdgeInsets.all(16),
                                         child: Row(
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             // Left section: Text info
                                             Expanded(
                                               flex: 3,
                                               child: Column(
-                                                crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    data['title'] ??
-                                                        'No Title',
+                                                    data['title'] ?? 'No Title',
                                                     style: const TextStyle(
                                                       fontSize: 18,
-                                                      fontWeight:
-                                                      FontWeight.bold,
+                                                      fontWeight: FontWeight.bold,
                                                       color: Colors.black87,
                                                     ),
                                                   ),
                                                   const SizedBox(height: 8),
                                                   Text(
-                                                    data['description'] ??
-                                                        'No Description',
-                                                    style: TextStyle(
-                                                        color:
-                                                        Colors.grey[800]),
+                                                    data['description'] ?? 'No Description',
+                                                    style: TextStyle(color: Colors.grey[800]),
                                                   ),
                                                   const SizedBox(height: 6),
                                                   Text(
                                                     '📍 ${data['location'] ?? 'No location'}',
-                                                    style: TextStyle(
-                                                        color:
-                                                        Colors.grey[600]),
+                                                    style: TextStyle(color: Colors.grey[600]),
                                                   ),
                                                   Text(
                                                     '📅 ${data['date'] ?? 'No date'}',
-                                                    style: TextStyle(
-                                                        color:
-                                                        Colors.grey[600]),
+                                                    style: TextStyle(color: Colors.grey[600]),
                                                   ),
                                                 ],
                                               ),
                                             ),
 
                                             // Right section: Image if exists
-                                            if (data['imageUrl'] != null) ...[
+                                            if (data['imageUrl'] != null &&
+                                                data['imageUrl'].toString().isNotEmpty) ...[
                                               const SizedBox(width: 16),
                                               ClipRRect(
-                                                borderRadius:
-                                                BorderRadius.circular(12),
-                                                child: (data['imageUrl'] !=
-                                                    null &&
-                                                    data['imageUrl']
-                                                        .toString()
-                                                        .isNotEmpty)
-                                                    ? Image.network(
+                                                borderRadius: BorderRadius.circular(12),
+                                                child: Image.network(
                                                   data['imageUrl'],
                                                   height: 100,
                                                   width: 140,
                                                   fit: BoxFit.cover,
-                                                  errorBuilder: (context,
-                                                      error, stackTrace) {
+                                                  errorBuilder: (context, error, stackTrace) {
                                                     return Image.asset(
                                                       'assets/images/announcement.png',
                                                       height: 100,
@@ -190,12 +172,6 @@ class ServicesPage extends StatelessWidget {
                                                       fit: BoxFit.cover,
                                                     );
                                                   },
-                                                )
-                                                    : Image.asset(
-                                                  'assets/images/announcement.png',
-                                                  height: 100,
-                                                  width: 140,
-                                                  fit: BoxFit.cover,
                                                 ),
                                               ),
                                             ],

@@ -9,6 +9,7 @@ class ContactsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MainScaffold(
+
       child: Stack(
         children: [
           // Background
