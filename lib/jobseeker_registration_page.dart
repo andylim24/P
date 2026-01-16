@@ -27,7 +27,7 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
   
   // Current section for stepper (reduces widgets rendered at once)
   int _currentStep = 0;
-  
+  late TextEditingController _dateOfBirthController;
   final List<String> _stepTitles = [
     'Personal Information',
     'Employment Status',
@@ -40,7 +40,13 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
   void initState() {
     super.initState();
     _formData = JobseekerFormData();
+    _dateOfBirthController = TextEditingController();
     _autoFillFromAuth();
+  }
+  @override
+  void dispose() {
+    _dateOfBirthController.dispose();
+    super.dispose();
   }
 
   void _autoFillFromAuth() {
@@ -118,7 +124,12 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
       lastDate: now,
     );
     if (picked != null) {
-      setState(() => _formData.dateOfBirth = picked);
+      setState(() {
+        _formData.dateOfBirth = picked;
+        // Update the controller text
+        _dateOfBirthController.text = 
+          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      });
     }
   }
 
@@ -322,21 +333,22 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
           spacing: 12,
           runSpacing: 12,
           children: [
-            GestureDetector(
-              onTap: _pickDate,
-              child: AbsorbPointer(
-                child: CompactTextField(
-                  hint: 'Date of Birth',
-                  label: 'DATE OF BIRTH',
-                  width: 180,
-                  initialValue: _formData.dateOfBirth != null
-                      ? '${_formData.dateOfBirth!.year}-${_formData.dateOfBirth!.month.toString().padLeft(2, '0')}-${_formData.dateOfBirth!.day.toString().padLeft(2, '0')}'
-                      : '',
-                  readOnly: true,
-                  onTap: _pickDate,
-                ),
-              ),
-            ),
+GestureDetector(
+  onTap: _pickDate,
+  child: AbsorbPointer(
+    child: CompactTextField(
+      hint: 'Date of Birth',
+      label: 'DATE OF BIRTH',
+      width: 180,
+      initialValue: _formData.dateOfBirth != null
+          ? '${_formData.dateOfBirth!.year}-${_formData.dateOfBirth!.month.toString().padLeft(2, '0')}-${_formData.dateOfBirth!.day.toString().padLeft(2, '0')}'
+          : '',
+      readOnly: true,
+      onTap: _pickDate,
+      key: ValueKey(_formData.dateOfBirth), // Force rebuild when date changes
+    ),
+  ),
+),
             CompactTextField(
               hint: 'Place of Birth',
               label: 'PLACE OF BIRTH',
