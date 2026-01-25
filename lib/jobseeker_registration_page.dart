@@ -15,19 +15,20 @@ class JobseekerRegistrationPage extends StatefulWidget {
   const JobseekerRegistrationPage({Key? key}) : super(key: key);
 
   @override
-  State<JobseekerRegistrationPage> createState() => _JobseekerRegistrationPageState();
+  State<JobseekerRegistrationPage> createState() =>
+      _JobseekerRegistrationPageState();
 }
 
 class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isSubmitting = false;
-  
+
   // Use a single data model instead of dozens of controllers
   late JobseekerFormData _formData;
-  
+
   // Current section for stepper (reduces widgets rendered at once)
   int _currentStep = 0;
-  
+
   final List<String> _stepTitles = [
     'Personal Information',
     'Employment Status',
@@ -76,9 +77,9 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User not signed in.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('User not signed in.')));
         return;
       }
 
@@ -88,7 +89,10 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
           .collection('forms')
           .doc('jobseeker_registration');
 
-      await docRef.set(_formData.toFirestore(user.uid), SetOptions(merge: true));
+      await docRef.set(
+        _formData.toFirestore(user.uid),
+        SetOptions(merge: true),
+      );
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -99,9 +103,9 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
     } catch (e) {
       debugPrint('Error saving form: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -154,7 +158,10 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
 
               // Form container
               SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 16,
+                ),
                 child: Container(
                   width: kIsWeb ? 900 : double.infinity,
                   constraints: const BoxConstraints(maxWidth: 900),
@@ -220,8 +227,8 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
                 color: isActive
                     ? Colors.blue.shade700
                     : isCompleted
-                        ? Colors.green.shade100
-                        : Colors.grey.shade200,
+                    ? Colors.green.shade100
+                    : Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -277,7 +284,7 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const FormSectionTitle('I. PERSONAL INFORMATION'),
-        
+
         // Name fields
         Wrap(
           spacing: 12,
@@ -326,6 +333,9 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
               onTap: _pickDate,
               child: AbsorbPointer(
                 child: CompactTextField(
+                  key: ValueKey(
+                    _formData.dateOfBirth,
+                  ), // Forces rebuild when date changes
                   hint: 'Date of Birth',
                   label: 'DATE OF BIRTH',
                   width: 180,
@@ -333,7 +343,6 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
                       ? '${_formData.dateOfBirth!.year}-${_formData.dateOfBirth!.month.toString().padLeft(2, '0')}-${_formData.dateOfBirth!.day.toString().padLeft(2, '0')}'
                       : '',
                   readOnly: true,
-                  onTap: _pickDate,
                 ),
               ),
             ),
@@ -397,7 +406,10 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
         const SizedBox(height: 16),
 
         // Address
-        const Text('PRESENT ADDRESS', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+        const Text(
+          'PRESENT ADDRESS',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+        ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 12,
@@ -444,7 +456,7 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const FormSectionTitle('EMPLOYMENT STATUS'),
-        
+
         Wrap(
           spacing: 8,
           runSpacing: 4,
@@ -478,21 +490,6 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
               value: 'Retired',
               groupValue: _formData.employmentStatus,
               onChanged: (v) => setState(() => _formData.employmentStatus = v),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            CompactTextField(
-              hint: 'How long looking for work? (months)',
-              width: 280,
-              initialValue: _formData.howLongLookingMonths,
-              onChanged: (v) => _formData.howLongLookingMonths = v,
-              keyboardType: TextInputType.number,
             ),
           ],
         ),
@@ -538,7 +535,7 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const FormSectionTitle('II. JOB PREFERENCES'),
-        
+
         for (int i = 0; i < 3; i++) ...[
           Wrap(
             spacing: 12,
@@ -563,17 +560,41 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
 
         const SizedBox(height: 16),
         const FormSectionTitle('III. LANGUAGE PROFICIENCY'),
-        
+
         // Language header
         const Padding(
           padding: EdgeInsets.only(bottom: 8),
           child: Row(
             children: [
               SizedBox(width: 100),
-              SizedBox(width: 70, child: Text('Read', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-              SizedBox(width: 70, child: Text('Write', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-              SizedBox(width: 70, child: Text('Speak', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
-              SizedBox(width: 90, child: Text('Understand', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold))),
+              SizedBox(
+                width: 70,
+                child: Text(
+                  'Read',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(
+                width: 70,
+                child: Text(
+                  'Write',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(
+                width: 70,
+                child: Text(
+                  'Speak',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(
+                width: 90,
+                child: Text(
+                  'Understand',
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
           ),
         ),
@@ -582,7 +603,8 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
           LanguageRow(
             language: lang,
             proficiency: _formData.languageProficiency[lang]!,
-            onChanged: (v) => setState(() => _formData.languageProficiency[lang] = v),
+            onChanged: (v) =>
+                setState(() => _formData.languageProficiency[lang] = v),
           ),
 
         const SizedBox(height: 12),
@@ -610,7 +632,7 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const FormSectionTitle('IV. EDUCATIONAL BACKGROUND'),
-        
+
         LabeledCheckbox(
           label: 'Currently in school?',
           value: _formData.currentlyInSchool,
@@ -659,7 +681,10 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
         const FormSectionTitle('V. TECHNICAL / VOCATIONAL TRAINING'),
 
         for (int i = 0; i < 3; i++) ...[
-          Text('Training ${i + 1}', style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12)),
+          Text(
+            'Training ${i + 1}',
+            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          ),
           const SizedBox(height: 6),
           Wrap(
             spacing: 12,
@@ -705,7 +730,10 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
         const FormSectionTitle('VII. WORK EXPERIENCE'),
 
         for (int i = 0; i < 3; i++) ...[
-          Text('Experience ${i + 1}', style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12)),
+          Text(
+            'Experience ${i + 1}',
+            style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          ),
           const SizedBox(height: 6),
           Wrap(
             spacing: 12,
@@ -751,7 +779,8 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
             return SkillCheckbox(
               skill: skill,
               value: _formData.otherSkills[skill]!,
-              onChanged: (v) => setState(() => _formData.otherSkills[skill] = v),
+              onChanged: (v) =>
+                  setState(() => _formData.otherSkills[skill] = v),
             );
           }).toList(),
         ),
@@ -805,10 +834,15 @@ class _JobseekerRegistrationPageState extends State<JobseekerRegistrationPage> {
                 ? const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
                 : const Icon(Icons.check),
-            label: Text(_isSubmitting ? 'Submitting...' : 'Submit Registration'),
+            label: Text(
+              _isSubmitting ? 'Submitting...' : 'Submit Registration',
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade600,
               foregroundColor: Colors.white,

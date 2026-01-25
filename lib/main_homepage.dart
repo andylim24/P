@@ -261,8 +261,6 @@ class _MainScaffoldState extends State<MainScaffold> {
                 _pushPage(context, const ProfilePage());
               } else if (value == 'application') {
                 _pushPage(context, const ApplicationTracker());
-              } else if (value == 'notification') {
-                _pushPage(context, const Notif());
               } else if (value == 'jobseeker') {
                 _pushPage(context, const JobseekerUpdatePage());
               }
@@ -271,7 +269,6 @@ class _MainScaffoldState extends State<MainScaffold> {
               PopupMenuItem(value: 'profile', child: Text("Profile Page")),
               PopupMenuItem(
                   value: 'application', child: Text("Application Tracker")),
-              PopupMenuItem(value: 'notification', child: Text("Notifications")),
               PopupMenuItem(
                   value: 'jobseeker', child: Text("Edit Jobseeker Profile")),
               PopupMenuItem(value: 'logout', child: Text("Log Out")),
@@ -314,17 +311,29 @@ class _MainScaffoldState extends State<MainScaffold> {
         ],
       );
     } else {
-      final displayText =
-          _displayName ?? cachedUserName ?? user!.email ?? "User";
+    
 
       return Column(
         children: [
-          ListTile(title: Text(displayText)),
           ListTile(
             title: const Text("Profile Page"),
             onTap: () {
               Navigator.pop(context);
               _pushPage(context, const ProfilePage());
+            },
+          ),
+          ListTile(
+            title: const Text("Application Tracker"),
+            onTap: () {
+              Navigator.pop(context);
+              _pushPage(context, const ApplicationTracker());
+            },
+          ),
+          ListTile(
+            title: const Text("Edit Job Seeker Profile"),
+            onTap: () {
+              Navigator.pop(context);
+              _pushPage(context, const JobseekerUpdatePage());
             },
           ),
           ListTile(

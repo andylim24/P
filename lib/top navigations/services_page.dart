@@ -146,9 +146,10 @@ class _ServicesPageState extends State<ServicesPage> {
                                                     style: TextStyle(color: Colors.grey[600]),
                                                   ),
                                                   Text(
-                                                    '📅 ${data['date'] ?? 'No date'}',
-                                                    style: TextStyle(color: Colors.grey[600]),
-                                                  ),
+                    '📅 ${_formatDate(data)}',
+                    style:
+                        TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
                                                 ],
                                               ),
                                             ),
@@ -196,4 +197,19 @@ class _ServicesPageState extends State<ServicesPage> {
       ),
     );
   }
-}
+   String _formatDate(Map<String, dynamic> data) {
+    // First check for dateDisplay (formatted string)
+    if (data['dateDisplay'] != null && data['dateDisplay'].toString().isNotEmpty) {
+      return data['dateDisplay'];
+    }
+    // Then check for Timestamp
+    if (data['date'] is Timestamp) {
+      final d = (data['date'] as Timestamp).toDate();
+      return '${d.day}/${d.month}/${d.year}';
+    }
+    // Fallback to string date
+    if (data['date'] != null && data['date'].toString().isNotEmpty) {
+      return data['date'].toString();
+    }
+    return 'No date';
+  }}

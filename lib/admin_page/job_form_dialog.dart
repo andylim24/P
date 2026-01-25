@@ -26,6 +26,7 @@ class _JobFormDialogState extends State<JobFormDialog> {
   String? _educationLevel;
   String? _employmentType;
   String? _location;
+  String? _category;
   String? _logoUrl;
   File? _logoFile;
 
@@ -49,6 +50,23 @@ class _JobFormDialogState extends State<JobFormDialog> {
     "Contractual", "Permanent", "Project-based", "Work from home"
   ];
 
+  final List<String> jobCategories = [
+    "Select Category",
+    "IT & Software",
+    "Customer Service",
+    "Healthcare",
+    "Education",
+    "Construction",
+    "Manufacturing",
+    "Retail & Sales",
+    "Food & Hospitality",
+    "Transportation & Logistics",
+    "Finance & Accounting",
+    "Administrative",
+    "Engineering",
+    "Other"
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -64,6 +82,7 @@ class _JobFormDialogState extends State<JobFormDialog> {
     _educationLevel = data['educationLevel'];
     _employmentType = data['employmentType'];
     _location = data['location'] ?? 'Barangays';
+    _category = data['category'] ?? 'Select Category';
     _logoUrl = data['logoUrl'];
 
     // ✅ Load program eligibility from existing data
@@ -117,6 +136,7 @@ class _JobFormDialogState extends State<JobFormDialog> {
       'educationLevel': _educationLevel,
       'employmentType': _employmentType,
       'location': _location,
+      'category': _category,
       'logoUrl': uploadedUrl,
       'postedDate': Timestamp.now(),
       // ✅ NEW: Save program eligibility
@@ -202,6 +222,9 @@ class _JobFormDialogState extends State<JobFormDialog> {
                 const SizedBox(height: 10),
                 _buildDropdown("Employment Type", employmentTypes, _employmentType,
                     (v) => setState(() => _employmentType = v)),
+                const SizedBox(height: 10),
+                _buildDropdown("Job Category", jobCategories, _category,
+                    (v) => setState(() => _category = v)),
                 const SizedBox(height: 10),
                 _buildDropdown("Location (Barangay)", barangays, _location,
                     (v) => setState(() => _location = v)),

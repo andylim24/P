@@ -615,26 +615,6 @@ class _JobseekerUpdatePageState extends State<JobseekerUpdatePage> {
         ),
         const SizedBox(height: 16),
 
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            CompactTextField(
-              hint: 'How long looking for work? (months)',
-              width: 280,
-              initialValue: _formData.howLongLookingMonths,
-              onChanged: (v) => _formData.howLongLookingMonths = v,
-              keyboardType: TextInputType.number,
-            ),
-            CompactTextField(
-              hint: 'Employment type detail',
-              width: 280,
-              initialValue: _formData.employmentTypeDetail,
-              onChanged: (v) => _formData.employmentTypeDetail = v,
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
 
         LabeledCheckbox(
           label: 'Are you an OFW?',

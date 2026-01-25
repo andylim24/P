@@ -24,3 +24,5 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+//flutter build web --release --dart-define=FLUTTER_WEB_RENDERER=html

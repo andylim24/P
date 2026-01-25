@@ -41,9 +41,51 @@ class _AnnouncementPageAdminState extends State<AnnouncementPageAdmin> {
 
   Uint8List? _selectedImageBytes;
   String? _uploadedImageUrl;
+  DateTime? _selectedDate;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
+
+  String _formatDate(dynamic date, String? dateDisplay) {
+    if (dateDisplay != null && dateDisplay.isNotEmpty) {
+      return dateDisplay;
+    }
+    if (date is Timestamp) {
+      final d = date.toDate();
+      return '${d.day}/${d.month}/${d.year}';
+    }
+    if (date is String && date.isNotEmpty) {
+      return date;
+    }
+    return 'No date';
+  }
+
+  Future<void> _pickDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.indigo,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+        _dateController.text = '${picked.day}/${picked.month}/${picked.year}';
+      });
+    }
+  }
 
   Future<void> _pickImage() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
@@ -89,7 +131,8 @@ class _AnnouncementPageAdminState extends State<AnnouncementPageAdmin> {
       'title': _titleController.text,
       'description': _descriptionController.text,
       'location': _locationController.text,
-      'date': _dateController.text,
+      'date': _selectedDate != null ? Timestamp.fromDate(_selectedDate!) : Timestamp.now(),
+      'dateDisplay': _dateController.text,
       'imageUrl': imageUrl,
     };
 
@@ -109,14 +152,23 @@ class _AnnouncementPageAdminState extends State<AnnouncementPageAdmin> {
     _dateController.clear();
     _selectedImageBytes = null;
     _uploadedImageUrl = null;
+    _selectedDate = null;
   }
 
   void _populateFields(Map<String, dynamic> data) {
     _titleController.text = data['title'] ?? '';
     _descriptionController.text = data['description'] ?? '';
     _locationController.text = data['location'] ?? '';
-    _dateController.text = data['date'] ?? '';
     _uploadedImageUrl = data['imageUrl'];
+
+    // Handle date - could be Timestamp or String
+    if (data['date'] is Timestamp) {
+      _selectedDate = (data['date'] as Timestamp).toDate();
+      _dateController.text = data['dateDisplay'] ?? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}';
+    } else {
+      _dateController.text = data['dateDisplay'] ?? data['date'] ?? '';
+      _selectedDate = null;
+    }
   }
 
   void _showEditDialog(DocumentSnapshot doc) {
@@ -166,7 +218,18 @@ class _AnnouncementPageAdminState extends State<AnnouncementPageAdmin> {
       TextField(controller: _titleController, decoration: InputDecoration(labelText: 'Title')),
       TextField(controller: _descriptionController, decoration: InputDecoration(labelText: 'Description')),
       TextField(controller: _locationController, decoration: InputDecoration(labelText: 'Location')),
-      TextField(controller: _dateController, decoration: InputDecoration(labelText: 'Date')),
+      TextField(
+        controller: _dateController,
+        decoration: InputDecoration(
+          labelText: 'Date',
+          suffixIcon: IconButton(
+            icon: Icon(Icons.calendar_today),
+            onPressed: () => _pickDate(context),
+          ),
+        ),
+        readOnly: true,
+        onTap: () => _pickDate(context),
+      ),
     ];
   }
 
@@ -295,7 +358,7 @@ class _AnnouncementPageAdminState extends State<AnnouncementPageAdmin> {
                                                 style: TextStyle(color: Colors.grey[600]),
                                               ),
                                               Text(
-                                                '📅 ${data['date'] ?? 'No date'}',
+                                                '📅 ${_formatDate(data['date'], data['dateDisplay'])}',
                                                 style: TextStyle(color: Colors.grey[600]),
                                               ),
                                               SizedBox(height: 8),

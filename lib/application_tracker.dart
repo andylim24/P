@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -16,18 +17,87 @@ class _ApplicationTrackerState extends State<ApplicationTracker> {
 
   int pendingCount = 0;
   int acceptedCount = 0;
+  StreamSubscription<DocumentSnapshot>? _userSub;
 
   @override
   void initState() {
     super.initState();
     _loadAppliedJobs();
+    _subscribeToUserDoc();
+  }
+
+  void _subscribeToUserDoc() {
+    if (user == null) return;
+    try {
+      _userSub = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .snapshots()
+          .listen((doc) {
+        if (doc.exists) {
+          _updateFromUserDoc(doc);
+        }
+      });
+    } catch (e) {
+      // ignore subscription errors
+      debugPrint('Failed to subscribe to user doc: $e');
+    }
+  }
+
+  void _updateFromUserDoc(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    final List<dynamic> appliedJobsData = data['appliedJobs'] ?? [];
+
+    List<Map<String, dynamic>> jobsWithAppliedDate = [];
+
+    for (final entry in appliedJobsData) {
+      if (entry is Map<String, dynamic> && entry['jobId'] != null && entry['appliedAt'] != null) {
+        final jobId = entry['jobId'] as String;
+        final appliedAt = entry['appliedAt'] as Timestamp;
+        final status = entry['status']?.toString() ?? 'Pending';
+
+        // Note: we don't fetch job details here since original implementation did so.
+        // Keep a lightweight representation so the tracker updates fast.
+        jobsWithAppliedDate.add({
+          'job': {'id': jobId, 'title': entry['jobTitle'], 'company': entry['company']},
+          'appliedAt': appliedAt,
+          'status': status,
+        });
+      }
+    }
+
+    jobsWithAppliedDate.sort((a, b) {
+      final aDate = (a['appliedAt'] as Timestamp).toDate();
+      final bDate = (b['appliedAt'] as Timestamp).toDate();
+      return bDate.compareTo(aDate);
+    });
+
+    int pCount = 0;
+    int aCount = 0;
+    for (var e in jobsWithAppliedDate) {
+      final s = (e['status'] as String).toLowerCase();
+      if (s == 'accepted' || s == 'hired') {
+        aCount++;
+      } else if (s == 'rejected') {
+        // rejected counts as neither pending nor accepted
+      } else {
+        pCount++;
+      }
+    }
+
+    setState(() {
+      appliedJobs = jobsWithAppliedDate;
+      pendingCount = pCount;
+      acceptedCount = aCount;
+    });
   }
 
   Future<void> _loadAppliedJobs() async {
     if (user == null) return;
 
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
-    final List<dynamic> appliedJobsData = userDoc.data()?['appliedJobs'] ?? [];
+    final data = userDoc.data() as Map<String, dynamic>? ?? {};
+    final List<dynamic> appliedJobsData = data['appliedJobs'] ?? [];
 
     List<Map<String, dynamic>> jobsWithAppliedDate = [];
 
@@ -59,8 +129,11 @@ class _ApplicationTrackerState extends State<ApplicationTracker> {
     int pCount = 0;
     int aCount = 0;
     for (var e in jobsWithAppliedDate) {
-      if ((e['status'] as String).toLowerCase() == 'accepted') {
+      final s = (e['status'] as String).toLowerCase();
+      if (s == 'accepted' || s == 'hired') {
         aCount++;
+      } else if (s == 'rejected') {
+        // rejected: do not count as pending
       } else {
         pCount++;
       }
@@ -71,6 +144,12 @@ class _ApplicationTrackerState extends State<ApplicationTracker> {
       pendingCount = pCount;
       acceptedCount = aCount;
     });
+  }
+
+  @override
+  void dispose() {
+    _userSub?.cancel();
+    super.dispose();
   }
 
   @override

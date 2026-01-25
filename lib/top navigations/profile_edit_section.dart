@@ -20,11 +20,12 @@ class _ProfileEditSectionState extends State<ProfileEditSection> {
   String? _selectedBarangay;
   Map<String, dynamic>? userData;
 
-  final List<String> barangays = [
-    'Comembo', 'East Rembo', 'Pembo', 'Pitogo', 'Post Proper Northside',
-    'Post Proper Southside', 'Rizal', 'South Cembo', 'West Rembo', 'Guadalupe Viejo',
-    'Guadalupe Nuevo', 'Cembo', 'Forbes Park', 'San Lorenzo', 'Urdaneta'
-  ];
+final List<String> barangays = [
+  'Cembo', 'Comembo', 'East Rembo', 'Forbes Park', 'Guadalupe Nuevo',
+  'Guadalupe Viejo', 'Pembo', 'Pitogo', 'Poblacion', // <-- Add this
+  'Post Proper Northside', 'Post Proper Southside', 'Rizal', 
+  'San Lorenzo', 'South Cembo', 'Urdaneta', 'West Rembo',
+];
 
   @override
   void initState() {
